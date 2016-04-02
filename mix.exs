@@ -5,12 +5,9 @@ defmodule Nerves.System.Mixfile do
   @cache_provider     System.get_env("NERVES_SYSTEM_CACHE_PROVIDER") || "bakeware"
   @compiler_provider  System.get_env("NERVES_SYSTEM_COMPILER_PROVIDER") || "bakeware"
 
-  providers =
-    HashSet.new
-    |> HashSet.put(@cache_provider)
-    |> HashSet.put(@compiler_provider)
-    |> HashSet.to_list
-    |> Enum.map(&String.to_atom/1)
+  providers = [@cache_provider, @compiler_provider]
+  |> Enum.map(&String.to_atom/1)
+  |> Enum.uniq
 
   @providers providers
 
