@@ -1,6 +1,7 @@
 defmodule Nerves.System.Providers.Local do
   use Nerves.System.Provider
   alias Nerves.Env
+  alias Nerves.System.Config
 
   @dl_cache "~/.nerves/cache/buildroot"
 
@@ -11,6 +12,11 @@ defmodule Nerves.System.Providers.Local do
   end
 
   def compile(system, dest) do
+    {_, type} = :os.type
+    compile(type, system, dest)
+  end
+
+  def compile(_, system, dest) do
     # TODO: Perform a platform check
     Logger.debug "Local Compiler"
     Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
@@ -22,7 +28,7 @@ defmodule Nerves.System.Providers.Local do
     File.mkdir_p(Path.expand(@dl_cache))
 
     system = Env.system
-    build_platform = system.env[:build_platform] || :nerves_system_br
+    build_platform = system.config[:build_platform] || :nerves_system_br
 
     copy_resources(system, dest)
     compile_defconfig(system, dest)
@@ -32,6 +38,16 @@ defmodule Nerves.System.Providers.Local do
     build(build_platform, system, dest)
   end
 
+  def compile(type, _, _) do
+    {:error, """
+    Local compiler support is not available for your host: #{type}
+    You can compile systems using a different provider like bakeware
+
+    You can configure your host to use a different compiler provider by setting the variable
+    NERVES_SYSTEM_COMPILER_PROVIDER=bakeware
+    """}
+  end
+
   defp copy_resources(%Env.Dep{path: path}, dest) do
     Path.join(path, "src")
     |> File.cp_r!(Path.join(dest, "src"))
@@ -39,22 +55,28 @@ defmodule Nerves.System.Providers.Local do
 
   defp compile_defconfig(%Env.Dep{} = system, dest) do
     system_defconfig =
-      Path.join(dest, system.env[:ext][:defconfig])
+      Path.join(dest, system.config[:ext][:defconfig])
 
     unless File.exists?(system_defconfig), do: raise """
     System defconfig cannot be found at #{inspect system_defconfig}
     """
+    Config.start
+    Config.load(system_defconfig)
 
-    # TODO: While compiling the defconfig, read lone by line and present k / v mis match errors
-    Enum.each(Env.system_exts, fn(%{path: path, env: env}) ->
-      if env[:ext] != nil do
-        if env[:ext][:defconfig] != nil do
-          ext_defconfig = Path.join(path, env[:ext][:defconfig])
-          File.write!(system_defconfig, File.read!(ext_defconfig), [:append])
+
+    # TODO: While compiling the defconfig, read line by line and present k / v mis match errors
+    Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
+      if config[:ext] != nil do
+        if config[:ext][:defconfig] != nil do
+          ext_defconfig = Path.join(path, config[:ext][:defconfig])
+          Config.load(ext_defconfig)
         end
       end
     end)
+    File.write!(system_defconfig, Config.dump)
   end
+
+
 
   # TODO: Expand paths from metadata for extensions and append to the BR OVERLAY key in the defconfig.
   defp compile_rootfs_additions(%Env.Dep{} = system, dest) do
@@ -63,7 +85,7 @@ defmodule Nerves.System.Providers.Local do
 
   defp bootstrap(:nerves_system_br, %Env.Dep{} = system, dest) do
     cmd = Path.join(Env.dep(:nerves_system_br).path, "create-build.sh")
-    shell! "#{cmd} #{Path.join(dest, system.env[:ext][:defconfig])} #{dest}"
+    shell! "#{cmd} #{Path.join(dest, system.config[:ext][:defconfig])} #{dest}"
   end
 
   defp build(:nerves_system_br, system, dest) do

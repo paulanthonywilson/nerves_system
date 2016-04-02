@@ -1,9 +1,9 @@
 defmodule Nerves.System.Provider do
-  @callback cache_get(system :: atom, version :: String.t, destination :: String.t) ::
+  @callback cache_get(system :: atom, version :: String.t, config :: term, destination :: String.t) ::
     {:ok, archive :: binary} |
     {:error, response :: term}
 
-  @callback compile(system :: atom, destination :: String.t) ::
+  @callback compile(system :: atom, config :: term, destination :: String.t) ::
     {:ok, archive :: binary} |
     {:error, response :: term}
 
