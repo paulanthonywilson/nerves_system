@@ -48,6 +48,11 @@ defmodule Mix.Tasks.Compile.NervesSystem do
           {:error, error} -> cache_error(error)
         end
       end
+      manifest =
+        Env.deps
+        |> :erlang.term_to_binary
+      path = Path.join(app_path, ".nerves.lock")
+      result = File.write(path, manifest)
     end
   end
 

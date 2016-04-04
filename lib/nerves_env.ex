@@ -39,15 +39,31 @@ defmodule Nerves.Env do
   def stale? do
     system_manifest =
       system_path
+      |> Path.join("..")
       |> Path.join(".nerves.lock")
+      |> Path.expand
 
-    [system | system_exts]
-    |> Enum.map(fn (%{path: path, config: config}) ->
-      (config[:package_files] || @default_files)
-      |> expand_paths(path)
-      |> Enum.map(& Path.join(path, &1))
-    end)
-    |> Enum.any?(& Mix.Utils.stale?(&1, [system_manifest]))
+    if stale_check_manifest(system_manifest) do
+      [system | system_exts]
+      |> Enum.map(fn (%{path: path, config: config}) ->
+        (config[:package_files] || @default_files)
+        |> expand_paths(path)
+        |> Enum.map(& Path.join(path, &1))
+      end)
+      |> Enum.any?(& Mix.Utils.stale?(&1, [system_manifest]))
+    else
+      true
+    end
+  end
+
+  def stale_check_manifest(manifest) do
+    case File.read(manifest) do
+      {:ok, file} ->
+        file
+        |> :erlang.binary_to_term
+        |> Keyword.equal?(Env.deps)
+      _ -> false
+    end
   end
 
   def system do
@@ -230,7 +246,10 @@ defmodule Nerves.Env do
       {"NERVES_TOOLCHAIN", toolchain_path}]
     |> Enum.each(fn({k, v}) -> System.put_env(k, v) end)
 
+    # Bootstrap the build platform
+    platform = Env.system.config[:build_platform] || raise Nerves.System.Exception, message: "You must specify a build_platform in the nerves.exs config for the system #{Env.system.app}"
 
+    platform.bootstrap
   end
 
   defp toolchain_path do
