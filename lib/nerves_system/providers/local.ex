@@ -79,7 +79,7 @@ defmodule Nerves.System.Providers.Local do
 
   # TODO: Expand paths from metadata for extensions and append to the BR OVERLAY key in the defconfig.
   defp compile_rootfs_additions(%Env.Dep{} = _system, _dest) do
-    Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
+    #Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
   end
 
   defp bootstrap(:nerves_system_br, %Env.Dep{} = system, dest) do
