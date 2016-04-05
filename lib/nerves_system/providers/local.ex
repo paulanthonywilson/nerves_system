@@ -7,7 +7,7 @@ defmodule Nerves.System.Providers.Local do
 
   require Logger
 
-  def cache_get(_system, _version, _dest) do
+  def cache_get(_system, _version, _config, _dest) do
     {:error, :nocache}
   end
 
@@ -16,7 +16,7 @@ defmodule Nerves.System.Providers.Local do
     compile(type, system, dest)
   end
 
-  def compile(_, system, dest) do
+  def compile(:linux, _system, dest) do
     # TODO: Perform a platform check
     Logger.debug "Local Compiler"
     Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
@@ -79,7 +79,7 @@ defmodule Nerves.System.Providers.Local do
 
 
   # TODO: Expand paths from metadata for extensions and append to the BR OVERLAY key in the defconfig.
-  defp compile_rootfs_additions(%Env.Dep{} = system, dest) do
+  defp compile_rootfs_additions(%Env.Dep{} = _system, _dest) do
 
   end
 
@@ -88,7 +88,7 @@ defmodule Nerves.System.Providers.Local do
     shell! "#{cmd} #{Path.join(dest, system.config[:ext][:defconfig])} #{dest}"
   end
 
-  defp build(:nerves_system_br, system, dest) do
+  defp build(:nerves_system_br, _system, dest) do
     shell! "make", dir: dest
   end
 
