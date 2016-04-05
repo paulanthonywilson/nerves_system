@@ -82,12 +82,12 @@ defmodule Nerves.System.Providers.Local do
     #Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
   end
 
-  defp bootstrap(:nerves_system_br, %Env.Dep{} = system, dest) do
+  defp bootstrap(Nerves.System.Platforms.BR, %Env.Dep{} = system, dest) do
     cmd = Path.join(Env.dep(:nerves_system_br).path, "create-build.sh")
     shell! "#{cmd} #{Path.join(dest, system.config[:ext][:defconfig])} #{dest}"
   end
 
-  defp build(:nerves_system_br, _system, dest) do
+  defp build(Nerves.System.Platforms.BR, _system, dest) do
     shell! "make", dir: dest
   end
 
