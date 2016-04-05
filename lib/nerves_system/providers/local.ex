@@ -11,12 +11,12 @@ defmodule Nerves.System.Providers.Local do
     {:error, :nocache}
   end
 
-  def compile(system, dest) do
+  def compile(system, config, dest) do
     {_, type} = :os.type
-    compile(type, system, dest)
+    compile(type, system, config, dest)
   end
 
-  def compile(:linux, _system, dest) do
+  def compile(:linux, _system, config, dest) do
     # TODO: Perform a platform check
     Logger.debug "Local Compiler"
     Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
