@@ -240,15 +240,12 @@ defmodule Nerves.Env do
   ERL_INTERFACE_INCLUDE_DIR="$ERL_INTERFACE_DIR/include"
   """
   def bootstrap do
-    env_vars = []
-
-    [ {"NERVES_SYSTEM", system_path},
-      {"NERVES_TOOLCHAIN", toolchain_path}]
+    [{"NERVES_SYSTEM", System.get_env("NERVES_SYSTEM") || system_path},
+     {"NERVES_TOOLCHAIN", System.get_env("NERVES_TOOLCHAIN") || toolchain_path}]
     |> Enum.each(fn({k, v}) -> System.put_env(k, v) end)
 
     # Bootstrap the build platform
     platform = Env.system.config[:build_platform] || raise Nerves.System.Exception, message: "You must specify a build_platform in the nerves.exs config for the system #{Env.system.app}"
-
     platform.bootstrap
   end
 
