@@ -6,6 +6,15 @@ defmodule Nerves.Env do
 
   defmodule Dep do
     defstruct [app: nil,  path: nil, type: nil, config: []]
+
+    @type t :: %__MODULE__{app: atom,
+                          path: binary,
+                          type: :system |
+                                :system_ext |
+                                :system_compiler |
+                                :toolchain |
+                                :toolchain_compiler,
+                        config: Keyword.t}
   end
 
   def initialize do
@@ -69,6 +78,10 @@ defmodule Nerves.Env do
   def system do
     deps_by_type(:system)
     |> List.first
+  end
+
+  def system_platform do
+    system.config[:build_platform]
   end
 
   def system_exts do
