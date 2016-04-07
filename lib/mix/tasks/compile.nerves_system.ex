@@ -11,7 +11,7 @@ defmodule Mix.Tasks.Compile.NervesSystem do
   @shortdoc "Nerves Build System"
 
   def run(_args) do
-    if System.get_env("NERVES_SYSTEM_BUILT") != nil do
+    if System.get_env("NERVES_SYSTEM_BUILT") == nil do
       preflight
     end
   end
