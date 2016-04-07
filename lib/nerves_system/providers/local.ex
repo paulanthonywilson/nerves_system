@@ -1,7 +1,7 @@
 defmodule Nerves.System.Providers.Local do
   use Nerves.System.Provider
   alias Nerves.Env
-  alias Nerves.System.Config
+  alias Nerves.System.{Config, Platform}
 
   @dl_cache "~/.nerves/cache/buildroot"
 
@@ -29,10 +29,6 @@ defmodule Nerves.System.Providers.Local do
 
     system = Env.system
     build_platform = system.config[:build_platform] || :nerves_system_br
-
-    copy_resources(system, dest)
-    compile_defconfig(system, dest)
-    compile_rootfs_additions(system, dest)
 
     bootstrap(build_platform, system, dest)
     build(build_platform, system, dest)
@@ -84,7 +80,9 @@ defmodule Nerves.System.Providers.Local do
 
   defp bootstrap(Nerves.System.Platforms.BR, %Env.Dep{} = system, dest) do
     cmd = Path.join(Env.dep(:nerves_system_br).path, "create-build.sh")
-    shell! "#{cmd} #{Path.join(dest, system.config[:ext][:defconfig])} #{dest}"
+    build_config = Platform.build_config(system)
+    config_dir = Path.join(dest, build_config[:dest])
+    shell! "#{cmd} #{Path.join(config_dir, build_config[:defconfig])} #{dest}"
   end
 
   defp build(Nerves.System.Platforms.BR, _system, dest) do

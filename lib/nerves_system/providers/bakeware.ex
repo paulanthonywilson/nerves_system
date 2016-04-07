@@ -7,10 +7,9 @@ defmodule Nerves.System.Providers.Bakeware do
     Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
     Application.ensure_all_started(:bake)
     bakeware_config = config[:bakeware]
-    cache_resp =
-      bakeware_config[:recipe]
-      |> cache_recipe_get(version)
-      |> copy_build(system, version, config, destination)
+    bakeware_config[:recipe]
+    |> cache_recipe_get(version)
+    |> copy_build(system, version, config, destination)
   end
 
 
@@ -64,9 +63,10 @@ defmodule Nerves.System.Providers.Bakeware do
   def compile(_system, _config, _dest) do
     # Serialize the env
     {:ok, tar} = Nerves.Env.serialize
-    resp = File.read!(tar)
+    File.read!(tar)
     |> Bake.Api.Compile.post
   end
+
 
   defp cache_recipe_get(nil, _) do
     shell_info ~s/bakeware: [recipe: ""] is not configured/
@@ -83,7 +83,7 @@ defmodule Nerves.System.Providers.Bakeware do
     get_asset("#{host}/#{path}")
   end
 
-  defp cache_recipe_receive({:error, reason}) do
+  defp cache_recipe_receive({:error, _reason}) do
     {:error, :nocache}
   end
 
@@ -92,7 +92,7 @@ defmodule Nerves.System.Providers.Bakeware do
     case Bake.Api.request(:get, url, []) do
       {:ok, %{status_code: code, body: tar}} when code in 200..299 ->
         {:ok, tar}
-      {:error, response} -> {:error, "Failed to download system from cache"}
+      {:error, _response} -> {:error, "Failed to download system from cache"}
     end
   end
 
@@ -100,7 +100,7 @@ defmodule Nerves.System.Providers.Bakeware do
     do: copy_build(tar, system, version, config, destination)
   defp copy_build({:error, error}, _, _, _, _),
     do: {:error, error}
-  defp copy_build(system_tar, system, version, config, destination) do
+  defp copy_build(system_tar, _system, version, config, destination) do
     tmp_dir = Path.join(File.cwd!, ".bakeware-tmp")
     File.mkdir_p! tmp_dir
     tar_file = tmp_dir <> "/system.tar.xz"
@@ -111,9 +111,6 @@ defmodule Nerves.System.Providers.Bakeware do
     bakeware_config = config[:bakeware]
     recipe = bakeware_config[:recipe]
     target = bakeware_config[:target]
-
-    recipe = String.split("/", recipe)
-    |> List.last
 
     File.cp_r(Path.join(tmp_dir, "#{target}-#{version}"), destination)
     File.rm_rf!(tmp_dir)
