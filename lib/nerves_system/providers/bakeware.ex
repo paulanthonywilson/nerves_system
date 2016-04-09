@@ -111,8 +111,11 @@ defmodule Nerves.System.Providers.Bakeware do
     bakeware_config = config[:bakeware]
     recipe = bakeware_config[:recipe]
     target = bakeware_config[:target]
-
-    File.cp_r(Path.join(tmp_dir, "#{target}-#{version}"), destination)
+    source =
+      File.ls!(tmp_dir)
+      |> Enum.map(& Path.join(tmp_dir, &1))
+      |> Enum.find(&File.dir?/1)
+    File.cp_r(source, destination)
     File.rm_rf!(tmp_dir)
     {:ok, destination}
   end
