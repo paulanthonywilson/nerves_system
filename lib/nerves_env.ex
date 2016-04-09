@@ -48,7 +48,6 @@ defmodule Nerves.Env do
   def stale? do
     system_manifest =
       system_path
-      |> Path.join("..")
       |> Path.join(".nerves.lock")
       |> Path.expand
 
@@ -263,15 +262,13 @@ defmodule Nerves.Env do
   end
 
   defp toolchain_path do
-    Mix.Project.config
-    |> Mix.Project.build_path
-    |> Path.join("lib/#{Env.toolchain.app}/nerves_toolchain")
+    Mix.Project.build_path
+    |> Path.join("nerves/toolchain")
   end
 
   defp system_path do
-    Mix.Project.config
-    |> Mix.Project.build_path
-    |> Path.join("lib/#{Env.system.app}/nerves_system")
+    Mix.Project.build_path
+    |> Path.join("nerves/system")
   end
 
 end
