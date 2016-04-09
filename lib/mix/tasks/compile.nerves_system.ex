@@ -8,6 +8,8 @@ defmodule Mix.Tasks.Compile.NervesSystem do
     Build a Nerves System
   """
 
+  @dir "nerves/system"
+
   @shortdoc "Nerves Build System"
 
   def run(_args) do
@@ -32,13 +34,14 @@ defmodule Mix.Tasks.Compile.NervesSystem do
 
   defp build do
     Mix.shell.info "[nerves_system][compile]"
-    config    = Mix.Project.config
-    app_path  = Mix.Project.app_path(config)
+    config      = Mix.Project.config
+    build_path  = Mix.Project.build_path
+                  |> Path.join(@dir)
 
     app = config[:app]
     version = config[:version]
 
-    clean(Path.join(app_path, "nerves_system"))
+    clean(build_path)
 
     system_config = Env.system.config
     provider = system_config[:provider]
@@ -56,30 +59,30 @@ defmodule Mix.Tasks.Compile.NervesSystem do
       System Extensions Present: #{Enum.join(system_exts, ~s/ /)}
       Skipping cache provider
       """
-      compile(app, app_path, system_config)
+      compile(app, build_path, system_config)
     else
-      cache_resp = cache_provider.cache_get(app, version, system_config, Path.join(app_path, "nerves_system"))
+      cache_resp = cache_provider.cache_get(app, version, system_config, build_path)
       case cache_resp do
         {:ok, _} -> :ok
-        {:error, :nocache} -> compile(app, app_path, system_config)
+        {:error, :nocache} -> compile(app, build_path, system_config)
         {:error, error} -> cache_error(error)
       end
     end
     manifest =
       Env.deps
       |> :erlang.term_to_binary
-    path = Path.join(app_path, ".nerves.lock")
+    path = Path.join(build_path, ".nerves.lock")
     result = File.write(path, manifest)
   end
 
-  defp compile(app, path, config) do
+  defp compile(app, build_path, config) do
     Logger.debug "Compile System"
     platform = Env.system_platform
-    platform.config(Env.system, Path.join(path, "nerves_system"))
+    platform.config(Env.system, build_path)
 
     provider = providers(config)[:compiler] || default_provider(:compiler)
     compiler_provider = Module.concat(Nerves.System.Providers, String.capitalize(provider))
-    compiler_provider.compile(app, config, Path.join(path, "nerves_system"))
+    compiler_provider.compile(app, config, build_path)
     |> compile_result(provider)
   end
 
@@ -97,11 +100,11 @@ defmodule Mix.Tasks.Compile.NervesSystem do
 
   # TODO: Change the default providers to be set according to host_platform
   defp default_provider(:cache) do
-    System.get_env("NERVES_SYSTEM_CACHE_PROVIDER") || "bakeware"
+    System.get_env("NERVES_SYSTEM_CACHE") || "bakeware"
   end
 
   defp default_provider(:compiler) do
-    System.get_env("NERVES_SYSTEM_COMPILER_PROVIDER") || "bakeware"
+    System.get_env("NERVES_SYSTEM_COMPILER") || "bakeware"
   end
 
   defp clean(dest) do
@@ -112,41 +115,11 @@ defmodule Mix.Tasks.Compile.NervesSystem do
     system_config[:provider] || []
   end
 
-  # defp stale?(app_path) do
-  #   app_path = app_path
-  #   |> Path.join("nerves_system")
-  #   if (File.dir?(app_path)) do
-  #     src =  Path.join(File.cwd!, "src")
-  #     sources = src
-  #     |> File.ls!
-  #     |> Enum.map(& Path.join(src, &1))
-  #
-  #     Mix.Utils.stale?(sources, [app_path])
-  #   else
-  #     true
-  #   end
-  # end
-
   defp cache_error(reason) do
     Mix.shell.info """
     System download from cache provider failed for reason:
     #{inspect reason}
     """
   end
-
-  # def deploy_build(system_tar) do
-  #   config      = Mix.Project.config
-  #   app_path    = Mix.Project.app_path(config)
-  #
-  #   tar_file = app_path <> "/system.tar.xz"
-  #   write_result = File.write(tar_file, system_tar)
-  #   System.cmd("tar", ["xf", tar_file], cd: app_path)
-  #   File.rm!(tar_file)
-  #   target = Path.join(app_path, "nerves_system")
-  #   File.touch(target)
-  #   {:ok, target}
-  # end
-
-
 
 end
