@@ -2,10 +2,10 @@ defmodule Nerves.System.Mixfile do
   use Mix.Project
   require Logger
 
-  @cache_provider     System.get_env("NERVES_SYSTEM_CACHE_PROVIDER") || "bakeware"
-  @compiler_provider  System.get_env("NERVES_SYSTEM_COMPILER_PROVIDER") || "bakeware"
+  @cache      System.get_env("NERVES_SYSTEM_CACHE")    || "bakeware"
+  @compiler   System.get_env("NERVES_SYSTEM_COMPILER") || "bakeware"
 
-  providers = [@cache_provider, @compiler_provider]
+  providers = [@cache, @compiler]
   |> Enum.map(&String.to_atom/1)
   |> Enum.uniq
 
