@@ -28,7 +28,7 @@ defmodule Nerves.System.Providers.Local do
     File.mkdir_p(Path.expand(@dl_cache))
 
     system = Env.system
-    build_platform = system.config[:build_platform] || :nerves_system_br
+    build_platform = system.config[:build_platform] || Nerves.System.BR
 
     bootstrap(build_platform, system, dest)
     build(build_platform, system, dest)
@@ -50,7 +50,7 @@ defmodule Nerves.System.Providers.Local do
 
   defp compile_defconfig(%Env.Dep{} = system, dest) do
     system_defconfig =
-      Path.join(dest, system.config[:ext][:defconfig])
+      Path.join(dest, system.config[:build_config][:defconfig])
 
     unless File.exists?(system_defconfig), do: raise """
     System defconfig cannot be found at #{inspect system_defconfig}
@@ -61,9 +61,9 @@ defmodule Nerves.System.Providers.Local do
 
     # TODO: While compiling the defconfig, read line by line and present k / v mis match errors
     Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
-      if config[:ext] != nil do
-        if config[:ext][:defconfig] != nil do
-          ext_defconfig = Path.join(path, config[:ext][:defconfig])
+      if config[:build_config] != nil do
+        if config[:build_config][:defconfig] != nil do
+          ext_defconfig = Path.join(path, config[:build_config][:defconfig])
           Config.load(ext_defconfig)
         end
       end
