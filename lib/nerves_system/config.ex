@@ -27,7 +27,6 @@ defmodule Nerves.System.Config do
 
   def dump do
     Agent.get(__MODULE__, &(&1))
-    |> IO.inspect
     |> Enum.map(fn
       {:comments, c} -> Enum.join(c, "\n")
       {k, v} = t -> "#{k}=#{v}"

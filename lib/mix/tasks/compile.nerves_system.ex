@@ -100,11 +100,11 @@ defmodule Mix.Tasks.Compile.NervesSystem do
 
   # TODO: Change the default providers to be set according to host_platform
   defp default_provider(:cache) do
-    System.get_env("NERVES_SYSTEM_CACHE") || "bakeware"
+    System.get_env("NERVES_SYSTEM_CACHE") || "http"
   end
 
   defp default_provider(:compiler) do
-    System.get_env("NERVES_SYSTEM_COMPILER") || "bakeware"
+    System.get_env("NERVES_SYSTEM_COMPILER") || "vagrant"
   end
 
   defp clean(dest) do

@@ -11,7 +11,6 @@ defmodule Nerves.System.Platforms.BR do
     build_config = Platform.build_config(system)
     dest = Path.join(dest, build_config[:dest])
     File.mkdir_p!(dest)
-    Logger.debug "Build Config: #{inspect build_config}"
     copy_configs(system, build_config, dest)
     assemble_defconfig(system, build_config, dest)
   end
@@ -34,7 +33,6 @@ defmodule Nerves.System.Platforms.BR do
   defp copy_configs(%Env.Dep{} = system, build_config, dest) do
     ret = Path.join(system.path, build_config[:defconfig])
     |> File.cp(Path.join(dest, build_config[:defconfig]))
-    Logger.debug "Copy Config: #{inspect dest}"
     kconfig_path = Path.join(system.path, build_config[:kconfig])
     if File.exists?(kconfig_path) do
       File.cp(kconfig_path, dest)

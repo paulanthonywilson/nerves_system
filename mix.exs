@@ -2,14 +2,25 @@ defmodule Nerves.System.Mixfile do
   use Mix.Project
   require Logger
 
-  @cache      System.get_env("NERVES_SYSTEM_CACHE")    || "bakeware"
-  @compiler   System.get_env("NERVES_SYSTEM_COMPILER") || "bakeware"
+  default_cache = "http"
+
+  default_compiler =
+    case :os.type do
+      {_, :linux} -> "local"
+      _ -> "vagrant"
+    end
+
+  @cache      System.get_env("NERVES_SYSTEM_CACHE")    || default_cache
+  @compiler   System.get_env("NERVES_SYSTEM_COMPILER") || default_compiler
 
   providers = [@cache, @compiler]
   |> Enum.map(&String.to_atom/1)
   |> Enum.uniq
 
   @providers providers
+
+  System.put_env("NERVES_SYSTEM_CACHE", @cache)
+  System.put_env("NERVES_SYSTEM_COMPILER", @compiler)
 
   def project do
     [app: :nerves_system,
@@ -26,8 +37,8 @@ defmodule Nerves.System.Mixfile do
     Enum.reduce(@providers, [], fn(provider, acc) -> acc ++ provider(provider) end)
   end
 
-  defp provider(:bakeware) do
-    [{:bake, github: "bakeware/bake"}]
+  defp provider(:http) do
+    [{:httpoison, "~> 0.8.3"}]
   end
 
   defp provider(:local) do
@@ -37,4 +48,5 @@ defmodule Nerves.System.Mixfile do
   defp provider(_) do
     []
   end
+
 end
