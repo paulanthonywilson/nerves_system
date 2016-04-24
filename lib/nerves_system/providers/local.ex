@@ -2,6 +2,7 @@ defmodule Nerves.System.Providers.Local do
   use Nerves.System.Provider
   alias Nerves.Env
   alias Nerves.System.{Config, Platform}
+  alias Nerves.System.Providers.Local.Stream, as: OutStream
 
   @dl_cache "~/.nerves/cache/buildroot"
 
@@ -58,8 +59,6 @@ defmodule Nerves.System.Providers.Local do
     Config.start
     Config.load(system_defconfig)
 
-
-    # TODO: While compiling the defconfig, read line by line and present k / v mis match errors
     Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
       if config[:build_config] != nil do
         if config[:build_config][:defconfig] != nil do
@@ -69,13 +68,6 @@ defmodule Nerves.System.Providers.Local do
       end
     end)
     File.write!(system_defconfig, Config.dump)
-  end
-
-
-
-  # TODO: Expand paths from metadata for extensions and append to the BR OVERLAY key in the defconfig.
-  defp compile_rootfs_additions(%Env.Dep{} = _system, _dest) do
-    #Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
   end
 
   defp bootstrap(Nerves.System.Platforms.BR, %Env.Dep{} = system, dest) do
@@ -90,7 +82,9 @@ defmodule Nerves.System.Providers.Local do
   end
 
   defp shell!(cmd, opts \\ []) do
-    stream = IO.binstream(:standard_io, :line)
-    %{status: 0} = Porcelain.shell(cmd, [in: stream, async_in: true, out: stream] ++ opts)
+    in_stream = IO.binstream(:standard_io, :line)
+    {:ok, pid} = OutStream.start_link(file: Path.join(File.cwd!, "build.log"))
+    out_stream = IO.stream(pid, :line)
+    %{status: 0} = Porcelain.shell(cmd, [in: in_stream, async_in: true, out: out_stream, err: :out] ++ opts)
   end
 end
