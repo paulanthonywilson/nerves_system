@@ -46,11 +46,10 @@ defmodule Nerves.System.Platforms.BR do
     |> Nerves.Env.expand_paths(system.path)
     |> Enum.each(fn(file) ->
       src_path = Path.join(system.path, file)
-      |> IO.inspect
       dest_path = Path.join(dest, file)
       Path.dirname(dest_path)
       |> File.mkdir_p
-      
+
       File.cp(src_path, dest_path)
     end)
   end
