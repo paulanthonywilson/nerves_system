@@ -253,7 +253,8 @@ defmodule Nerves.Env do
   """
   def bootstrap do
     [{"NERVES_SYSTEM", System.get_env("NERVES_SYSTEM") || system_path},
-     {"NERVES_TOOLCHAIN", System.get_env("NERVES_TOOLCHAIN") || toolchain_path}]
+     {"NERVES_TOOLCHAIN", System.get_env("NERVES_TOOLCHAIN") || toolchain_path},
+     {"NERVES_APP", File.cwd!}]
     |> Enum.each(fn({k, v}) -> System.put_env(k, v) end)
 
     # Bootstrap the build platform
