@@ -31,8 +31,15 @@ defmodule Nerves.System.Platforms.BR do
   end
 
   defp copy_configs(%Env.Dep{} = system, build_config, dest) do
-    ret = Path.join(system.path, build_config[:defconfig])
+    Path.join(system.path, build_config[:defconfig])
     |> File.cp(Path.join(dest, build_config[:defconfig]))
+
+    (build_config[:package_files] || [])
+    |> Enum.each(fn (file) ->
+      Path.join(system.path, file)
+      |> File.cp(Path.join(dest, file))
+    end)
+
     kconfig_path = Path.join(system.path, build_config[:kconfig])
     if File.exists?(kconfig_path) do
       File.cp(kconfig_path, dest)
