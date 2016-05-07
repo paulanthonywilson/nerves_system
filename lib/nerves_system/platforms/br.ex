@@ -34,12 +34,6 @@ defmodule Nerves.System.Platforms.BR do
     Path.join(system.path, build_config[:defconfig])
     |> File.cp(Path.join(dest, build_config[:defconfig]))
 
-    (build_config[:package_files] || [])
-    |> Enum.each(fn (file) ->
-      Path.join(system.path, file)
-      |> File.cp(Path.join(dest, file))
-    end)
-
     kconfig_path = Path.join(system.path, build_config[:kconfig])
     if File.exists?(kconfig_path) do
       File.cp(kconfig_path, dest)
@@ -47,6 +41,18 @@ defmodule Nerves.System.Platforms.BR do
       Path.join(dest, "Config.in")
       |> File.touch
     end
+
+    package_files = (build_config[:package_files] || [])
+    |> Nerves.Env.expand_paths(system.path)
+    |> Enum.each(fn(file) ->
+      src_path = Path.join(system.path, file)
+      |> IO.inspect
+      dest_path = Path.join(dest, file)
+      Path.dirname(dest_path)
+      |> File.mkdir_p
+      
+      File.cp(src_path, dest_path)
+    end)
   end
 
   defp assemble_defconfig(system, build_config, dest) do
