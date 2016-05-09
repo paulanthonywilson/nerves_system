@@ -42,7 +42,7 @@ defmodule Nerves.System.Platforms.BR do
       |> File.touch
     end
 
-    package_files = (build_config[:package_files] || [])
+    (build_config[:package_files] || [])
     |> Nerves.Env.expand_paths(system.path)
     |> Enum.each(fn(file) ->
       src_path = Path.join(system.path, file)
@@ -54,7 +54,7 @@ defmodule Nerves.System.Platforms.BR do
     end)
   end
 
-  defp assemble_defconfig(system, build_config, dest) do
+  defp assemble_defconfig(_system, build_config, dest) do
     system_defconfig =
       dest
       |> Path.join(build_config[:defconfig])

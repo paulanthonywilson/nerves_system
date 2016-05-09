@@ -1,7 +1,6 @@
 defmodule Mix.Tasks.Compile.NervesSystem do
   use Mix.Task
   alias Nerves.Env
-  alias Nerves.System.{Platform, Config}
   require Logger
 
   @moduledoc """
@@ -72,7 +71,7 @@ defmodule Mix.Tasks.Compile.NervesSystem do
       Env.deps
       |> :erlang.term_to_binary
     path = Path.join(build_path, ".nerves.lock")
-    result = File.write(path, manifest)
+    File.write(path, manifest)
   end
 
   defp compile(app, build_path, config) do

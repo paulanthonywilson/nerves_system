@@ -1,7 +1,7 @@
 defmodule Nerves.System.Providers.Local do
   use Nerves.System.Provider
   alias Nerves.Env
-  alias Nerves.System.{Config, Platform}
+  alias Nerves.System.Platform
   alias Nerves.System.Providers.Local.Stream, as: OutStream
 
   @dl_cache "~/.nerves/cache/buildroot"
@@ -17,7 +17,7 @@ defmodule Nerves.System.Providers.Local do
     compile(type, system, config, dest)
   end
 
-  def compile(:linux, _system, config, dest) do
+  def compile(:linux, _system, _config, dest) do
     # TODO: Perform a platform check
     Logger.debug "Local Compiler"
     Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
@@ -35,7 +35,7 @@ defmodule Nerves.System.Providers.Local do
     build(build_platform, system, dest)
   end
 
-  def compile(type, _, _) do
+  def compile(type, _, _, _) do
     {:error, """
     Local compiler support is not available for your host: #{type}
     You can compile systems using a different provider like bakeware
@@ -43,31 +43,6 @@ defmodule Nerves.System.Providers.Local do
     You can configure your host to use a different compiler provider by setting the variable
     NERVES_SYSTEM_COMPILER_PROVIDER=bakeware
     """}
-  end
-
-  defp copy_resources(%Env.Dep{path: source}, dest) do
-    File.cp_r!(source, dest)
-  end
-
-  defp compile_defconfig(%Env.Dep{} = system, dest) do
-    system_defconfig =
-      Path.join(dest, system.config[:build_config][:defconfig])
-
-    unless File.exists?(system_defconfig), do: raise """
-    System defconfig cannot be found at #{inspect system_defconfig}
-    """
-    Config.start
-    Config.load(system_defconfig)
-
-    Enum.each(Env.system_exts, fn(%{path: path, config: config}) ->
-      if config[:build_config] != nil do
-        if config[:build_config][:defconfig] != nil do
-          ext_defconfig = Path.join(path, config[:build_config][:defconfig])
-          Config.load(ext_defconfig)
-        end
-      end
-    end)
-    File.write!(system_defconfig, Config.dump)
   end
 
   defp bootstrap(Nerves.System.Platforms.BR, %Env.Dep{} = system, dest) do

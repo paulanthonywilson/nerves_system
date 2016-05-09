@@ -14,8 +14,7 @@ defmodule Nerves.System.Providers.Local.Stream do
     end
     {:ok, %{
       file: opts[:file],
-      timer: Process.send_after(self, :keep_alive, @timer),
-      line: true
+      timer: Process.send_after(self, :keep_alive, @timer)
     }}
   end
 
@@ -29,18 +28,11 @@ defmodule Nerves.System.Providers.Local.Stream do
 
   def handle_info(:keep_alive, s) do
     IO.write "."
-    s = reset_timer(s)
-    {:noreply, %{s | line: true}}
+    {:noreply, reset_timer(s)}
   end
 
-  def stdout(<<"\e[7m>>>", tail :: binary>> = chars, message, s) do
-    s =
-    if s.line == true do
-      IO.write "\n"
-      %{s | line: false}
-    else
-      s
-    end
+  def stdout(<<"\e[7m>>>", tail :: binary>>, _message, s) do
+    IO.write "\n"
 
     [tail | _] =
       tail
@@ -48,7 +40,7 @@ defmodule Nerves.System.Providers.Local.Stream do
 
     "\e[7m" <> tail
     |> String.strip
-    |> IO.puts
+    |> IO.write
     reset_timer(s)
   end
   def stdout(_, _, s), do: s

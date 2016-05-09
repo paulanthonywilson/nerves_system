@@ -29,7 +29,7 @@ defmodule Nerves.System.Config do
     Agent.get(__MODULE__, &(&1))
     |> Enum.map(fn
       {:comments, c} -> Enum.join(c, "\n")
-      {k, v} = t -> "#{k}=#{v}"
+      {k, v} -> "#{k}=#{v}"
 
     end)
     |> Enum.reduce("", &(&2 <> "#{&1}\n"))

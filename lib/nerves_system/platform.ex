@@ -16,7 +16,6 @@ defmodule Nerves.System.Platform do
 
   def build_config(%Nerves.Env.Dep{config: config}) do
     platform = config[:build_platform]
-    build_config =
-      Keyword.merge(platform.default_build_config, config[:build_config] || [])
+    Keyword.merge(platform.default_build_config, config[:build_config] || [])
   end
 end

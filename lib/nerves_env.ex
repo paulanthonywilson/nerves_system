@@ -102,8 +102,6 @@ defmodule Nerves.Env do
       |> Enum.reduce({[], []}, fn(%{app: app, path: path, config: config} = dep, {files, manifests}) ->
         default_files = config[:package_files] || @default_files
 
-        tar_path = "nerves_env/#{app}"
-
         dep_manifest = %{
           app: app,
           type: dep.type,

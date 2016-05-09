@@ -1,7 +1,5 @@
 defmodule Mix.Tasks.Compress.NervesSystem do
   use Mix.Task
-  alias Nerves.Env
-  alias Nerves.System.{Platform, Config}
   alias Nerves.System.Providers.Local.Stream, as: OutStream
   require Logger
 
@@ -18,14 +16,14 @@ defmodule Mix.Tasks.Compress.NervesSystem do
       Nerves.Env.initialize
       Application.put_env(:porcelain, :driver, Porcelain.Driver.Basic)
       Application.ensure_all_started(:porcelain)
-      system     = Nerves.Env.system
+
       dest = Mix.Project.build_path
                    |> Path.join(@dir)
       shell! "make system", dir: dest
     #end
   end
 
-  defp shell!(cmd, opts \\ []) do
+  defp shell!(cmd, opts) do
     in_stream = IO.binstream(:standard_io, :line)
     {:ok, pid} = OutStream.start_link(file: Path.join(File.cwd!, "build.log"))
     out_stream = IO.stream(pid, :line)

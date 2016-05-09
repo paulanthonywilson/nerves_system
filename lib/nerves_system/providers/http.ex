@@ -3,12 +3,16 @@ defmodule Nerves.System.Providers.Http do
 
   @recv_timeout 120_000
 
-  def cache_get(system, version, config, destination) do
+  def cache_get(_system, _version, config, destination) do
     Application.ensure_all_started(:httpoison)
     shell_info "Downloading system from cache"
     config[:mirrors]
     |> get
     |> unpack(destination)
+  end
+
+  def compile(_system, _config, _dest) do
+    {:error, :nocompile}
   end
 
   defp get([mirror | mirrors]) do
@@ -36,7 +40,7 @@ defmodule Nerves.System.Providers.Http do
     File.mkdir_p!(tmp_path)
     tar_file = Path.join(tmp_path, "system.tar.xz")
     File.write(tar_file, tar)
-    
+
     System.cmd("tar", ["xf", "system.tar.xz"], cd: tmp_path)
     source =
       File.ls!(tmp_path)

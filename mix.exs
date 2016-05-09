@@ -7,7 +7,7 @@ defmodule Nerves.System.Mixfile do
   default_compiler =
     case :os.type do
       {_, :linux} -> "local"
-      _ -> "vagrant"
+      _ -> "none"
     end
 
   @cache      System.get_env("NERVES_SYSTEM_CACHE")    || default_cache
@@ -24,8 +24,10 @@ defmodule Nerves.System.Mixfile do
 
   def project do
     [app: :nerves_system,
-     version: "0.0.1",
+     version: "0.1.0",
      elixir: "~> 1.2",
+     description: description,
+     package: package,
      deps: deps]
   end
 
@@ -47,6 +49,19 @@ defmodule Nerves.System.Mixfile do
 
   defp provider(_) do
     []
+  end
+
+  defp description do
+    """
+    Elixir compilers and scripts for building Nerves Systems. For useable system configurations see nerves_system_*
+    """
+  end
+
+  defp package do
+    [maintainers: ["Frank Hunleth", "Justin Schneck"],
+     files: ["lib", "README.md", "LICENSE", "nerves.exs", "mix.exs"],
+     licenses: ["Apache 2.0"],
+     links: %{"Github" => "https://github.com/nerves-project/nerves_system"}]
   end
 
 end
