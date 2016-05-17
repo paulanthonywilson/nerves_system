@@ -24,7 +24,7 @@ defmodule Nerves.System.Mixfile do
 
   def project do
     [app: :nerves_system,
-     version: "0.1.1",
+     version: "0.1.2",
      elixir: "~> 1.2",
      description: description,
      package: package,
@@ -36,7 +36,11 @@ defmodule Nerves.System.Mixfile do
   end
 
   defp deps do
-    Enum.reduce(@providers, [], fn(provider, acc) -> acc ++ provider(provider) end)
+    if System.get_env("HEX") != nil do
+      provider(:http) ++ provider(:local)
+    else
+      Enum.reduce(@providers, [], fn(provider, acc) -> acc ++ provider(provider) end)
+    end
   end
 
   defp provider(:http) do
